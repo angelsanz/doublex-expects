@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
+
 import doublex
 from expects import expect, be_a, contain
 from expects.testing import failure
@@ -21,8 +23,18 @@ with describe('have_been_called_with'):
 
         expect(self.method).to(have_been_called_with(self.arg1))
 
+    with it('passes if called with at least the specified positional arg'):
+        self.method(self.arg1, 42)
+
+        expect(self.method).to(have_been_called_with(self.arg1))
+
     with it('passes if called with multiple positional args'):
         self.method(self.arg1, self.arg2)
+
+        expect(self.method).to(have_been_called_with(self.arg1, self.arg2))
+
+    with it('passes if called with at least the specified positional args'):
+        self.method(self.arg1, self.arg2, 42)
 
         expect(self.method).to(have_been_called_with(self.arg1, self.arg2))
 
@@ -31,10 +43,37 @@ with describe('have_been_called_with'):
 
         expect(self.method).to(have_been_called_with(**self.kwargs))
 
+    with it('passes if called with at least the specified keyword args'):
+        kwargs = deepcopy(self.kwargs)
+        kwargs['another_kwarg'] = 42
+        self.method(**kwargs)
+
+        expect(self.method).to(have_been_called_with(**self.kwargs))
+
     with it('passes if called with positional and keyword args'):
         self.method(self.arg1, self.arg2, **self.kwargs)
 
         expect(self.method).to(have_been_called_with(self.arg1, self.arg2, **self.kwargs))
+
+    with describe('passes if called with at least the specified positional and keyword args'):
+        with it('even when called with more positional args'):
+            self.method(self.arg1, self.arg2, 50, **self.kwargs)
+
+            expect(self.method).to(have_been_called_with(self.arg1, self.arg2, **self.kwargs))
+
+        with it('even when called with more keyword args'):
+            kwargs = deepcopy(self.kwargs)
+            kwargs['another_kwarg'] = 42
+            self.method(self.arg1, self.arg2, **kwargs)
+
+            expect(self.method).to(have_been_called_with(self.arg1, self.arg2, **self.kwargs))
+
+        with it('even when called with more positional args and more keyword args'):
+            kwargs = deepcopy(self.kwargs)
+            kwargs['another_kwarg'] = 42
+            self.method(self.arg1, self.arg2, 50, **kwargs)
+
+            expect(self.method).to(have_been_called_with(self.arg1, self.arg2, **self.kwargs))
 
     with it('passes if called with positional arg matching matcher'):
         self.method(self.arg1)
@@ -71,6 +110,12 @@ with describe('have_been_called_with'):
             self.method(self.arg1)
 
             expect(self.method).not_to(have_been_called_with(self.arg1, self.arg2))
+
+        with it('fails if spy was called with at least the specified positional arg'):
+            self.method(self.arg1, self.arg2)
+
+            with failure:
+                expect(self.method).not_to(have_been_called_with(self.arg1))
 
         with it('fails if called with args'):
             self.method(self.arg1, **self.kwargs)
