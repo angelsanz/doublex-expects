@@ -73,7 +73,8 @@ Asserts that a spy has been called.
 have_been_called_with
 ---------------------
 
-Asserts that a spy has been called with given arguments.
+Asserts that a spy has been called with **at least** the given arguments. When negated, asserts that at least
+some of the specified arguments was missing from the call.
 
 .. code-block:: python
 
